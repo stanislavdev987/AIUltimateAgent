@@ -53,6 +53,23 @@ This module is tailored specifically for **Hikka-based userbots** and is highly 
 
 ---
 
+## 📦 Requirements
+
+The module depends on a focused runtime stack designed for AI orchestration, scheduling, time zone handling, HTTP operations, and GitHub automation.
+
+### Required libraries
+- `PyGithub`
+- `apscheduler`
+- `pytz`
+- `requests`
+
+### Installation command
+```bash
+pip install PyGithub apscheduler pytz requests
+```
+
+---
+
 ## 🚀 Key Features
 
 ### 1. Advanced GitHub Integration
@@ -170,11 +187,28 @@ It is an intentionally engineered output system for **high-signal operational me
 | **GitHub** | `.gh_review` | Run AI-assisted code review on files or repository targets |
 | **GitHub** | `.gh_issue` | List, create, or close GitHub issues |
 | **GitHub** | `.gh_commit` | Add, commit, and push repository changes |
+| **GitHub** | `.gh_pull` | Synchronize repository |
+| **GitHub** | `.gh_clone` | Clone repository to environment |
 | **System** | `.sh` | Natural-language shell execution |
 | **System** | `.run` | Execute code or sandbox test workloads |
 | **System** | `.sys` | Inspect memory, CPU, and disk status |
+| **System** | `.shinfo` | Clean system summary |
 | **Tasks** | `.cron` | Create natural-language scheduled tasks |
 | **Tasks** | `.remind` | Schedule direct reminders |
+| **Tasks** | `.tasks` | List active cron tasks |
+
+---
+
+## 🧬 Elite Use Cases
+
+### Scenario 1 — DevOps Control Loop
+An operator can use `.sh` to inspect Heroku runtime state, review deployment-side symptoms, extract actionable terminal output, and then apply the corrective patch through `.gh_commit` directly from Telegram. This compresses inspection, validation, and repository response into a single operational surface.
+
+### Scenario 2 — AI Intelligence Workflow
+An analyst can use `.ai` with web-grounded reasoning enabled to map competitors, compare positioning, extract live signals, and deliver the result through premium HTML-styled response blocks suitable for executive-grade review inside chat.
+
+### Scenario 3 — Task Automation Pipeline
+A maintainer can create a structured `.cron` reminder to monitor repository state, trigger periodic review behavior, and keep operational follow-up persistent without leaving the Telegram workflow.
 
 ---
 
@@ -322,7 +356,11 @@ This is the exact kind of module built for people who want **power, density, ele
 
 ---
 
-## 📄 License / Usage Note
+## 📄 License
+
+This project is distributed under the **GNU GPL v3.0** license.
+
+> *The code must remain open source, attribution to VOIDPIXEL_STUDIO is required, and any derivatives must use the same license.*
 
 This project is intended for advanced Telegram userbot deployments and responsible operator usage.  
 Do not embed real secrets into the source file.  
@@ -335,4 +373,8 @@ Do not treat Heroku as a guaranteed full-sandbox substitute for VPS-grade runtim
   <b>Ultimate AI Agent</b><br>
   𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺<br><br>
   Developed by ASTEROID47 and GunmeN
+</p>
+
+<p align="center">
+  <b>Join the evolution of Telegram operational intelligence.</b>
 </p>
