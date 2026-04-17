@@ -1,0 +1,7 @@
+openai-whisper
+setuptools-rust
+torch
+PyGithub
+apscheduler
+pytz
+requests
