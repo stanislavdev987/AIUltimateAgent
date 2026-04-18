@@ -1,380 +1,389 @@
-# Ultimate AI Agent  
-### 𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺 Edition
+<div align="center">
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Hikka-Optimized-111111?style=for-the-badge&logo=telegram&logoColor=white" />
-  <img src="https://img.shields.io/badge/Heroku-Ready-430098?style=for-the-badge&logo=heroku&logoColor=white" />
-  <img src="https://img.shields.io/badge/Telegram-Userbot%20Module-229ED9?style=for-the-badge&logo=telegram&logoColor=white" />
-  <img src="https://img.shields.io/badge/AI-Powered-0A0A0A?style=for-the-badge&logo=openai&logoColor=white" />
-  <img src="https://img.shields.io/badge/Sandbox-Isolated-1F1F1F?style=for-the-badge&logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/GitHub-Integrated-181717?style=for-the-badge&logo=github&logoColor=white" />
+# 🤖 UltimateAIAgent
+
+### AI-powered module for Hikka Telegram userbots
+
+<p>
+  <img src="https://img.shields.io/badge/Hikka-Compatible-229ED9?style=for-the-badge&logo=telegram&logoColor=white" />
+  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" />
+  <img src="https://img.shields.io/badge/Qwen-Powered-FF6A00?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Docker-Sandboxed-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
+  <img src="https://img.shields.io/badge/License-GPL--3.0-blue?style=for-the-badge" />
 </p>
 
-<p align="center">
-  <b>A high-density AI module for Telegram userbots, engineered for Hikka and Heroku deployments.</b><br>
-  Designed for elite operator workflows, code-centric automation, GitHub control, terminal execution, and premium HTML-styled chat UX.
-</p>
+**A production-ready AI module for Telegram userbots — chat, vision, web search, GitHub, sandboxed code execution, transcription, and scheduled tasks, all from inside Telegram.**
+
+<sub>Brand: <b>VoidPixel Studio</b></sub>
+
+</div>
 
 ---
 
-## ✨ Overview
-
-**Ultimate AI Agent** is a large-scale, production-oriented Telegram userbot module built for advanced operational environments.  
-With roughly **6,000 lines of integrated logic**, it combines:
-
-- conversational AI,
-- multi-step web reasoning,
-- GitHub repository management,
-- terminal and resource diagnostics,
-- isolated code execution,
-- reminders and cron-style automations,
-- multilingual output control,
-- and premium HTML-first response formatting.
-
-This module is tailored specifically for **Hikka-based userbots** and is highly compatible with **Heroku-style deployments**, while still scaling better on **full VPS environments** for unrestricted sandbox and Docker workflows.
+> ### 📖 New user? **[Read the Installation Guide first →](INSTALL.md)**
+>
+> Installing this module incorrectly can break your server or leave your `.sh` command unsandboxed. The [INSTALL.md](INSTALL.md) walks you through Docker setup, user permissions, and verification — **don't skip it**.
 
 ---
 
 ## 👑 Developers
 
-**ASTEROID47** — [@ASTEROID47_official](https://t.me/ASTEROID47_official)  
-**GunmeN** — [@GunmeN_NemnuG](https://t.me/GunmeN_NemnuG)
+<table>
+<tr>
+<td align="center" width="50%">
+
+### ASTEROID47
+[@ASTEROID47_official](https://t.me/ASTEROID47_official)
+
+</td>
+<td align="center" width="50%">
+
+### GunmeN
+[@GunmeN_NemnuG](https://t.me/GunmeN_NemnuG)
+
+</td>
+</tr>
+</table>
 
 ---
 
-## ✅ Compatibility
+## ✨ Features
 
-| Platform | Status | Notes |
-|---|---:|---|
-| **Hikka** | ✅ Fully Optimized | Primary target environment |
-| **Heroku** | ✅ Supported | Suitable for core features and light-to-medium workloads |
-| **VPS / Dedicated Linux Host** | ⭐ Recommended | Best option for full Docker, sandbox, runtime, and process flexibility |
-| **Telegram Userbots** | ✅ Native Use Case | Built specifically for chat-command workflows |
+- 🧠 **Multi-model LLM chat** — Alibaba Qwen (DashScope, OpenAI-compatible) with automatic fallback chain
+- 👁️ **Vision support** — analyze images, GIFs, and video in replies (`qwen-vl-*`)
+- 🌐 **Web search & fetch** — Serper.dev integration with automatic URL grounding
+- 🎙️ **Transcription** — voice messages, round videos, and video files (requires `ffmpeg`)
+- 📦 **Sandboxed code execution** — Python / Java / Kotlin / Dart / Bash inside isolated Docker containers
+- 🔒 **Secure shell** — `.sh` runs inside `--network none` sandbox by default
+- 🐙 **GitHub integration** — clone, pull, diff, commit, push, issues, PR reviews, AI code review
+- ⏰ **Reminders & cron** — persistent scheduling with SQLite (survives restarts)
+- ⚡ **Streaming responses** — real-time typing with Telegram rate-limit protection
+- 💾 **Long-term memory** — SQLite-backed keyword search across past conversations
+- 🌍 **Bilingual UI** — Russian and English
+- 🎨 **Clean HTML formatting** — Telegram-native rendering, no markdown noise
 
 ---
 
-## 📦 Requirements
+## 🚀 Quickstart
 
-The module depends on a focused runtime stack designed for AI orchestration, scheduling, time zone handling, HTTP operations, and GitHub automation.
+### 1️⃣ Install the module
 
-### Required libraries
-- `PyGithub`
-- `apscheduler`
-- `pytz`
-- `requests`
+```
+.loadmod   (attach AiAgentUltimate.py)
+```
 
-### Installation command
-```bash
-pip install PyGithub apscheduler pytz requests
+### 2️⃣ Set your Qwen API key
+
+Get yours at [DashScope Console](https://dashscope.console.aliyun.com/).
+
+```
+.cfg UltimateAIAgent
+   → api_key = sk-xxxxxxxxxxxxxxxxxxxx
+   → model   = qwen-plus           # or qwen-vl-max-latest for vision
+```
+
+### 3️⃣ Try it out
+
+```
+.ai hello
+```
+
+That's it. 🎉
+
+**Optional extras:**
+
+```
+.cfg UltimateAIAgent
+   → serper_api    = ...           # for web search
+   → github_token  = ghp_...       # for .gh_* commands
+   → timezone      = Europe/Moscow # or any IANA tz
 ```
 
 ---
 
-## 🚀 Key Features
+## 📋 Requirements
 
-### 1. Advanced GitHub Integration
-A fully chat-driven GitHub control layer for operators, developers, and maintainers.
+### Python packages
 
-**Capabilities include:**
-- **AI Code Review** directly from chat
-- **Issue Management** for listing, creating, and closing repository issues
-- **Commit / Push Automation** without leaving Telegram
-- repository cloning, pull synchronization, branch inspection, and diff previews
+```bash
+pip install -r requirements.txt
+```
 
-**Representative GitHub commands:**
-- `.gh_review`
-- `.gh_issue`
-- `.gh_diff`
-- `.gh_commit`
-- `.gh_pull`
-- `.gh_clone`
+### System dependencies
 
----
+| Component | Purpose | Install (Debian/Ubuntu) | Install (Termux) |
+|---|---|---|---|
+| `ffmpeg` | `.transcribe` voice/video | `apt install ffmpeg` | `pkg install ffmpeg` |
+| `docker` | sandbox for `.sh` and `.run` | [docs.docker.com](https://docs.docker.com/engine/install/) | ❌ not available natively |
+| `git`    | `.gh_clone`, `.gh_commit`, `.gh_pull` | `apt install git` | `pkg install git` |
 
-### 2. System Terminal & Resource Control
-A serious terminal-facing subsystem built for server-side diagnostics and controlled execution.
+### Compatibility matrix
 
-**Highlights:**
-- `.sh` translates natural language into a safe shell command and executes it
-- `.sys` reports **RAM / CPU / Disk** state in clean HTML layout
-- `.shinfo` returns system summary without decorative noise
-- system output is intentionally presented in **clean HTML**, with no irrelevant web-search contamination for terminal or resource operations
-
-This makes the module especially effective for:
-- Heroku runtime inspection
-- remote debugging
-- lightweight operations engineering
-- fast server sanity checks inside Telegram
-
----
-
-### 3. AI Sandbox
-An isolated code execution layer for controlled testing and runtime validation.
-
-**Supported workloads include:**
-- Python
-- Java
-- Kotlin
-- Dart
-- shell-based test commands in sandbox-aware contexts
-
-**Core strengths:**
-- isolated execution model
-- optional Docker-backed runtime
-- runtime detection and fallback logic
-- controlled self-healing / retry behavior for code execution flows
-
-This turns the module into a compact **Telegram-native remote coding workstation**.
-
----
-
-### 4. Smart Localization
-Full bilingual orientation for advanced operator usage.
-
-**Language support:**
-- **RU**
-- **EN**
-
-Localization is designed for:
-- user-facing command flows
-- premium HTML-formatted responses
-- structured operational messaging
-- consistent branded output across different usage scenarios
-
----
-
-### 5. UI Aesthetics
-Ultimate AI Agent follows the **VOIDPIXEL_STUDIO** response philosophy:
-
-- strict **HTML-first formatting**
-- bold structural emphasis through `<b>`
-- no markdown asterisks in bot replies
-- compact operator-grade visual hierarchy
-- automatic summarization for high-density answers
-- collapsible / expandable response presentation for space efficiency in chat interfaces
-
-The result is a **premium tactical UI style** optimized for readability, control, and visual authority.
-
----
-
-## 🧠 Formatting Philosophy
-
-The bot uses a strict **VOIDPIXEL_STUDIO** presentation model.
-
-### Output rules
-- HTML-focused response formatting
-- `<b>` for semantic emphasis
-- clean bullet-driven layout
-- no noisy markdown stars in generated bot output
-- dense yet readable information architecture
-- automatic response summarization where appropriate
-- expandable long-form response containers for preserving chat cleanliness
-
-This is not casual formatting.  
-It is an intentionally engineered output system for **high-signal operational messaging**.
+| Platform | Status | Notes |
+|---|:---:|---|
+| 🖥️ **Hikka on VPS** | ✅ Full | Primary target — docker, sandbox, all features |
+| ☁️ **Hikka on Heroku** | ⚠️ Partial | No docker — `.sh` / `.run` require `shell_require_sandbox=False` (unsafe) |
+| 📱 **Hikka on Termux** | ⚠️ Partial | No docker sandbox |
 
 ---
 
 ## 📚 Command Reference
 
-### Core Command Matrix
+### 🧠 AI
 
-| Category | Command | Description |
+| Command | Description |
+|---|---|
+| `.ai <prompt>` | Main AI chat; supports reply to text / photo / video |
+| `.aweb <prompt>` | AI answer with web search grounding |
+| `.agent <prompt>` | Multi-step chain agent (plan → search → answer) |
+| `.web <query>` | Pure web search (Serper.dev) |
+| `.img <query>` | Image search |
+| `.fetch <url>` | Read and analyze a web page |
+| `.wiki <query>` | Wikipedia search |
+| `.translate [lang] <text>` | Translate text (reply also works) |
+| `.ocr` | OCR text from an image (reply) |
+| `.transcribe` | Transcribe voice / round video / video (reply) |
+| `.setmodel <n>` | Switch active model |
+| `.models` | List available Qwen models |
+
+### 💻 Code
+
+| Command | Description |
+|---|---|
+| `.code <lang> \| <task>` | Generate code |
+| `.architect <lang> \| <task>` | Architectural coding plan |
+| `.review` | AI code review (reply to code) |
+| `.fix` | Fix code (reply) |
+| `.edit <instruction>` | Edit code (reply) |
+| `.patch <instruction>` | Produce unified diff (reply) |
+| `.debug` | Analyze error / stacktrace |
+| `.tests` | Generate tests |
+| `.run [lang] \| <code>` | Execute code in Docker sandbox |
+| `.codemode <mode>` | `direct` / `plan` / `patch` / `architect` |
+
+### 🐙 GitHub
+
+| Command | Description |
+|---|---|
+| `.gh_clone <url>` | Clone repository into chat session |
+| `.gh_pull` | `git pull` |
+| `.gh_status` | `git status` |
+| `.gh_diff` | Show diff |
+| `.gh_commit <message>` | Add + commit + push |
+| `.gh_issue list\|create\|close` | Manage issues |
+| `.gh_review <path \| pr N>` | AI review of file or PR |
+
+### 🖥️ System
+
+| Command | Description |
+|---|---|
+| `.sh <query>` | Natural-language bash via AI — runs in **Docker sandbox** |
+| `.sys` | AI analysis of RAM / CPU / disk |
+| `.shinfo` | Quick hardware and OS summary |
+| `.shelp` | System commands reference |
+
+### ⏰ Tasks & Memory
+
+| Command | Description |
+|---|---|
+| `.remind <5m\|2h\|1d> <text>` | One-time reminder |
+| `.reminders` | List active reminders |
+| `.cancel <id>` | Cancel reminder |
+| `.cron <natural-language task>` | Recurring task |
+| `.tasks` | List cron tasks |
+| `.done <id>` | Complete cron task |
+| `.memo <fact>` | Save to long-term memory |
+| `.forget` | Clear current chat memory |
+| `.aiclear` | Clear conversation history |
+| `.aiexport` | Export history to text |
+| `.aiimport` | Import history from `.aiexport` |
+
+### ⚙️ Settings
+
+| Command | Description |
+|---|---|
+| `.ailang <ru\|en>` | Interface language |
+| `.prompt <text>` | Custom system prompt for this chat |
+| `.searchmode <on\|off>` | Default live web search |
+| `.codeperm <mode>` | `read-only` / `workspace-write` / `danger-full-access` |
+| `.aistats` | Usage statistics |
+| `.aistatus` | Module status |
+
+---
+
+## 🔐 Security
+
+### Sandbox model for `.sh`
+
+By default, `.sh` runs every command inside a disposable Docker container with strict isolation:
+
+- 🚫 **`--network none`** — no outbound network access
+- 📖 **`--read-only`** root FS — writes allowed only to isolated `/workspace` and tmpfs `/tmp` (64 MB)
+- 🛡️ **`--cap-drop ALL`** + **`--security-opt no-new-privileges`** — dropped Linux capabilities, no privilege escalation
+- 💾 **Memory-limited** via `sandbox_memory_mb` (default 512 MB)
+- 🔒 **Host filesystem is NOT mounted** — commands cannot read `~/.ssh/`, `.env`, `/etc/shadow`, or any host file
+- 🧠 **Reply-context is intentionally NOT passed to the `.sh` planner** — this prevents prompt injection via replying to untrusted messages
+
+### Unsafe (host) mode
+
+If you set `shell_require_sandbox=False`, commands run directly on the host. A blacklist of ~30 patterns is applied as a second line of defense (`rm`, `mkfs`, `dd`, `curl`, `wget`, `ssh`, command substitution, access to `/dev/sd*`, private key reads, etc.), but **a blacklist is never a replacement for a real sandbox**.
+
+> ⚠️ **Only enable host mode on a disposable machine.** Do not run it on your main VPS.
+
+### Secrets
+
+All API keys are stored via Hikka's `Hidden` validator — they don't appear in config exports or public `.cfg` commands.
+
+> 🔑 **Never hardcode tokens directly in the module source.**
+
+---
+
+## 🔧 Configuration
+
+Configure everything via `.cfg UltimateAIAgent`. Key parameters:
+
+<details>
+<summary>🔑 <b>Core settings</b></summary>
+
+| Parameter | Default | Purpose |
 |---|---|---|
-| **AI** | `.ai` | Main AI interaction command |
-| **AI** | `.setmodel` | Switch active inference model |
-| **AI** | `.prompt` | Set or reset a custom system prompt |
-| **GitHub** | `.gh_review` | Run AI-assisted code review on files or repository targets |
-| **GitHub** | `.gh_issue` | List, create, or close GitHub issues |
-| **GitHub** | `.gh_commit` | Add, commit, and push repository changes |
-| **GitHub** | `.gh_pull` | Synchronize repository |
-| **GitHub** | `.gh_clone` | Clone repository to environment |
-| **System** | `.sh` | Natural-language shell execution |
-| **System** | `.run` | Execute code or sandbox test workloads |
-| **System** | `.sys` | Inspect memory, CPU, and disk status |
-| **System** | `.shinfo` | Clean system summary |
-| **Tasks** | `.cron` | Create natural-language scheduled tasks |
-| **Tasks** | `.remind` | Schedule direct reminders |
-| **Tasks** | `.tasks` | List active cron tasks |
+| `api_base` | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` | OpenAI-compatible endpoint |
+| `api_key` | *(empty — required)* | Qwen API key |
+| `model` | *(empty — uses fallback_model)* | Active model |
+| `fallback_model` | `qwen-vl-plus-latest, qwen-plus, qwen-turbo` | Fallback chain |
+| `temperature` | `0.25` | 0.0–2.0 |
+| `timezone` | `Europe/Moscow` | IANA tz for reminders / cron |
+| `streaming` | `True` | Real-time response streaming |
+| `serper_api` | *(empty)* | Serper.dev key for web search |
+| `github_token` | *(empty)* | GitHub Personal Access Token |
+
+</details>
+
+<details>
+<summary>🔐 <b>Shell &amp; sandbox settings</b></summary>
+
+| Parameter | Default | Purpose |
+|---|---|---|
+| `shell_enabled` | `True` | Allow `.sh` command |
+| `shell_require_sandbox` | `True` | Require Docker for `.sh` |
+| `shell_timeout` | `15` | `.sh` timeout, seconds |
+| `sandbox_image` | `python:3.11-slim` | Docker image (use multi-lang image for Java/Kotlin/Dart) |
+| `sandbox_memory_mb` | `512` | Sandbox memory limit |
+| `sandbox_exec_timeout` | `25` | `.run` timeout, seconds |
+| `sandbox_self_heal_attempts` | `3` | LLM auto-fix retries for `.run` |
+| `sandbox_prefer_docker` | `True` | Prefer Docker over local interpreter |
+
+</details>
+
+<details>
+<summary>🧪 <b>Behavior &amp; output</b></summary>
+
+| Parameter | Default | Purpose |
+|---|---|---|
+| `auto_transcribe` | `False` | Auto-transcribe incoming voice messages |
+| `history_turns` | `10` | Conversation history depth |
+| `coding_output_mode` | `plan` | `direct` / `plan` / `patch` / `architect` |
+| `coding_permission_mode` | `workspace-write` | `read-only` / `workspace-write` / `danger-full-access` |
+| `smart_history` | `True` | Compress old history instead of truncating |
+| `allow_chain_agent` | `True` | Enable multi-step agent |
+| `chain_max_steps` | `5` | Max steps for chain agent |
+
+</details>
+
+Full list — run `.cfg UltimateAIAgent` (~60 parameters).
 
 ---
 
-## 🧬 Elite Use Cases
+## 💾 Data Storage
 
-### Scenario 1 — DevOps Control Loop
-An operator can use `.sh` to inspect Heroku runtime state, review deployment-side symptoms, extract actionable terminal output, and then apply the corrective patch through `.gh_commit` directly from Telegram. This compresses inspection, validation, and repository response into a single operational surface.
+The module persists data in a SQLite database stored next to the module file (`<module_dir>/ultimate_ai.db`). **WAL mode** is enabled to reduce contention during concurrent writes from reminders, memory, and conversation history.
 
-### Scenario 2 — AI Intelligence Workflow
-An analyst can use `.ai` with web-grounded reasoning enabled to map competitors, compare positioning, extract live signals, and deliver the result through premium HTML-styled response blocks suitable for executive-grade review inside chat.
+**Tables:**
+- 📝 `memory` — long-term memory (facts saved via `.memo`, persisted dialogs)
+- 🔔 `reminders` — active reminders and cron tasks with schedules
 
-### Scenario 3 — Task Automation Pipeline
-A maintainer can create a structured `.cron` reminder to monitor repository state, trigger periodic review behavior, and keep operational follow-up persistent without leaving the Telegram workflow.
-
----
-
-## 🔐 Technical Nuances & Security
-
-### API Safety
-Security hygiene is a first-class design requirement.
-
-**Principles:**
-- sensitive values such as API tokens should be stored via **Hidden validators**
-- tokens must be injected through configuration, not embedded into source
-- hardcoding production credentials inside the Python module is explicitly unacceptable
-- operational secrets should never be exposed in logs, exports, screenshots, or repository history
-
-**Protected examples:**
-- Alibaba / Qwen API key
-- Serper API key
-- GitHub Personal Access Token
+> ☁️ **Heroku note:** the module stores the DB next to itself, but Heroku's ephemeral filesystem clears data on dyno restart. For persistent storage, use a VPS or migrate to Heroku Postgres (requires a separate adapter).
 
 ---
 
-### Deployment Notes
-Heroku can run the module effectively for many workflows, but **full sandbox parity is not always guaranteed**.
+## ❓ FAQ
 
-| Environment | Practical Recommendation |
-|---|---|
-| **Heroku** | Good for core AI, GitHub, reminders, and lightweight runtime tasks |
-| **Docker-dependent execution** | May require custom stack/runtime accommodations |
-| **Sandbox-heavy workflows** | Best served on a VPS |
-| **100% feature coverage** | **VPS is the recommended deployment target** |
+<details>
+<summary><b>Why shouldn't I run <code>.sh</code> on Heroku without sandbox?</b></summary>
 
-For fully unrestricted operation, especially where Docker-backed execution and low-level runtime flexibility matter, **VPS is the preferred architecture**.
+Heroku dynos don't support Docker-in-Docker, so `shell_require_sandbox=True` will refuse to execute. Disabling sandbox on Heroku is *less critical* than on a personal VPS (due to ephemeral FS), but it's still unsafe if anyone else uses your bot.
+</details>
 
----
+<details>
+<summary><b>Qwen returns an empty response.</b></summary>
 
-### API Requirements
+Check your balance and quota in the DashScope console. The fallback chain will automatically switch to the next model if the primary returns an error or empty content — you can extend `fallback_model` in the config.
+</details>
 
-| API / Credential | Required | Purpose |
-|---|---:|---|
-| **Alibaba Qwen API Key** | ✅ Yes | Main LLM inference, coding, reasoning, translation, review |
-| **Serper API Key** | ⚠ Optional / Contextual | Web search and live web-grounded responses |
-| **GitHub Token** | ✅ For GitHub features | Repository operations, issue workflows, authenticated GitHub management |
+<details>
+<summary><b><code>.transcribe</code> says "ffmpeg_missing".</b></summary>
 
----
+Install ffmpeg on your system:
+- Debian/Ubuntu: `apt install ffmpeg`
+- Termux: `pkg install ffmpeg`
+- macOS: `brew install ffmpeg`
+</details>
 
-## 🛠 Installation
+<details>
+<summary><b><code>.run</code> fails with "No runtime/compiler".</b></summary>
 
-### Option A — Hikka / Heroku Deployment
+Either install the language compiler locally (javac, kotlinc, dart), or install Docker and set `sandbox_prefer_docker=True`. For Python alone, the default `python:3.11-slim` image is enough.
+</details>
 
-#### 1. Prepare your environment
-- deploy your Hikka-compatible userbot environment
-- ensure your runtime has Python dependencies available
-- verify Telegram session and module loader are functioning correctly
+<details>
+<summary><b>History is wiped after restart.</b></summary>
 
-#### 2. Upload the module
-Place the module file into your loader-compatible modules workflow.
-
-#### 3. Configure secrets
-Set the following via `.cfg` or your loader configuration interface:
-
-- `api_key`
-- `model`
-- `serper_api`
-- `github_token`
-
-#### 4. Optional runtime tuning
-Adjust:
-- sandbox memory limits
-- Docker preference flags
-- fallback model chain
-- web search policies
-- localization preferences
-
-#### 5. Validate base commands
-Recommended sanity check sequence:
-```bash
-.ai hello
-.setmodel qwen-plus
-.sys
-.run python | print("sandbox ok")
+Make sure the module has write permissions in its directory. The DB is created at `<dir-of-module>/ultimate_ai.db`. Check with:
 ```
+.sh ls -la $(dirname $(readlink -f <path to module>))
+```
+</details>
+
+<details>
+<summary><b>Can I use a different LLM provider?</b></summary>
+
+Yes — the module uses an OpenAI-compatible API. Set `api_base` to any provider supporting that format (Groq, Together, DeepSeek, local llama.cpp with `--api`, etc.) and set `model` accordingly.
+</details>
 
 ---
 
-### Option B — VPS Deployment
+## 🤝 Contributing
 
-#### Recommended when you need:
-- unrestricted Docker usage
-- stronger filesystem control
-- higher process stability
-- more aggressive sandbox workloads
-- lower operational friction for GitHub and shell integration
+PRs, issues, and ideas are welcome on GitHub. For direct contact — reach out via Telegram.
 
-#### Typical VPS setup flow
-1. deploy Hikka or your preferred compatible Telegram userbot base
-2. install Python dependencies
-3. install Docker if sandbox isolation is required
-4. upload the module
-5. configure API credentials via loader config
-6. test `.ai`, `.run`, `.gh_*`, `.sys`, and scheduling flows
-
----
-
-## 🧪 Recommended Operational Checklist
-
-Before production usage, verify:
-
-- AI provider key is valid
-- model name is correctly configured
-- GitHub token has required repository scope
-- Serper key is present only when web search is needed
-- sandbox runtime has the expected language toolchains
-- no hardcoded credentials remain in source
-- HTML formatting renders correctly inside Telegram
-- long outputs preserve readability through summarization and compact layout logic
-
----
-
-## 🧭 Why This Project Matters
-
-Ultimate AI Agent is not a trivial chat extension.  
-It is a **Telegram-native operational intelligence layer**.
-
-It enables a single operator to:
-- reason with AI,
-- inspect infrastructure,
-- review code,
-- control GitHub workflows,
-- run sandboxed logic,
-- schedule tasks,
-- and maintain a premium UI aesthetic,
-
-all from within a single conversational control surface.
-
-This is the exact kind of module built for people who want **power, density, elegance, and command authority** inside Telegram.
-
----
-
-## 📩 Contact
-
-| Developer | Telegram |
-|---|---|
-| **ASTEROID47** | [@ASTEROID47_official](https://t.me/ASTEROID47_official) |
-| **GunmeN** | [@GunmeN_NemnuG](https://t.me/GunmeN_NemnuG) |
+<table>
+<tr>
+<td align="center"><a href="https://t.me/ASTEROID47_official">@ASTEROID47_official</a></td>
+<td align="center"><a href="https://t.me/GunmeN_NemnuG">@GunmeN_NemnuG</a></td>
+</tr>
+</table>
 
 ---
 
 ## 📄 License
 
-This project is distributed under the **GNU GPL v3.0** license.
+Released under the **GNU GPL v3.0** license.
 
-> *The code must remain open source, attribution to VOIDPIXEL_STUDIO is required, and any derivatives must use the same license.*
-
-This project is intended for advanced Telegram userbot deployments and responsible operator usage.  
-Do not embed real secrets into the source file.  
-Do not publish production tokens.  
-Do not treat Heroku as a guaranteed full-sandbox substitute for VPS-grade runtime environments.
+- ✅ The source must remain open
+- ✅ Attribution to **VoidPixel Studio** is required
+- ✅ Derivative works must use the same license
+- 🚫 Do not embed real secrets in the source
+- 🚫 Do not publish production tokens
+- 🚫 Do not treat Heroku as a guaranteed substitute for a full VPS sandbox
 
 ---
 
-<p align="center">
-  <b>Ultimate AI Agent</b><br>
-  𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺<br><br>
-  Developed by ASTEROID47 and GunmeN
-</p>
+<div align="center">
 
-<p align="center">
-  <b>Join the evolution of Telegram operational intelligence.</b>
-</p>
+### 🎯 UltimateAIAgent
+
+**Built by [ASTEROID47](https://t.me/ASTEROID47_official) and [GunmeN](https://t.me/GunmeN_NemnuG)**
+
+<sub>VoidPixel Studio</sub>
+
+</div>
