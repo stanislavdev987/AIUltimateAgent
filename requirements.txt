@@ -1,7 +1,24 @@
-openai-whisper
-setuptools-rust
-torch
-PyGithub
-apscheduler
-pytz
-requests
+# Core runtime dependencies for UltimateAIAgent
+# Install: pip install -r requirements.txt
+
+# HTTP client (used for Serper, image search, web fetch fallbacks)
+requests>=2.31.0
+
+# Timezone handling for reminders / cron scheduler
+pytz>=2024.1
+
+# Async job scheduler for .cron and reminder fire-times
+apscheduler>=3.10.4
+
+# GitHub API client (PyGithub) — used by .gh_* commands
+# Optional: module degrades gracefully if not installed
+PyGithub>=2.1.1
+
+# Notes on system-level dependencies (NOT installable via pip):
+#   ffmpeg  — required for .transcribe (voice/video messages)
+#             install: apt install ffmpeg   (Debian/Ubuntu)
+#                      pkg install ffmpeg   (Termux)
+#   docker  — required for .sh sandbox and .run sandbox execution
+#             install: https://docs.docker.com/engine/install/
+#
+# Telethon is provided by the Hikka userbot runtime; do not install separately.
