@@ -3,6 +3,7 @@ import base64
 import hashlib
 import html
 import json
+import logging
 import os
 import re
 import requests
@@ -31,6 +32,10 @@ try:
 except Exception:
     Github = None
     GithubException = Exception
+
+logger = logging.getLogger(__name__)
+
+BRAND = "VoidPixel Studio"
 
 
 class _HTMLTextExtractor(HTMLParser):
@@ -696,8 +701,8 @@ class UltimateAIAgentMod(loader.Module):
             ),
             loader.ConfigValue(
                 "sandbox_image",
-                "codercom/enterprise-base:latest",
-                "Docker image для multi-language sandbox",
+                "python:3.11-slim",
+                "Docker image для sandbox (.run). Для Java/Kotlin/Dart используй тяжёлый multi-language образ типа codercom/enterprise-base:latest",
                 validator=loader.validators.String(),
             ),
             loader.ConfigValue(
@@ -725,6 +730,30 @@ class UltimateAIAgentMod(loader.Module):
                 validator=loader.validators.Integer(minimum=0, maximum=5),
             ),
             loader.ConfigValue(
+                "timezone",
+                "Europe/Moscow",
+                "Часовой пояс для напоминаний и cron (IANA, напр. Europe/Moscow, Asia/Yekaterinburg, UTC)",
+                validator=loader.validators.String(),
+            ),
+            loader.ConfigValue(
+                "shell_enabled",
+                True,
+                "Разрешена ли команда .sh (выполнение bash через ИИ)",
+                validator=loader.validators.Boolean(),
+            ),
+            loader.ConfigValue(
+                "shell_require_sandbox",
+                True,
+                "Требовать docker sandbox для .sh (если docker недоступен — .sh откажет). ВКЛЮЧАЙ на VPS где есть docker.",
+                validator=loader.validators.Boolean(),
+            ),
+            loader.ConfigValue(
+                "shell_timeout",
+                15,
+                "Таймаут для .sh в секундах",
+                validator=loader.validators.Integer(minimum=3, maximum=60),
+            ),
+            loader.ConfigValue(
                 "system_prompt",
                 (
                     "Ты сильный полезный AI-агент. "
@@ -750,15 +779,39 @@ class UltimateAIAgentMod(loader.Module):
         self._active_reminders: Dict[str, asyncio.Task] = {}
         self._reminder_counter: int = 0
         self._scheduled_job_ids: Dict[str, str] = {}
-        self.tz = pytz.timezone("Europe/Moscow")
+
+        # Resolve timezone from config with safe fallback
+        tz_name = "Europe/Moscow"
+        try:
+            tz_name = str(self.config["timezone"]) or "Europe/Moscow"
+            self.tz = pytz.timezone(tz_name)
+        except Exception as e:
+            logger.warning("Invalid timezone %r, falling back to Europe/Moscow: %s", tz_name, e)
+            self.tz = pytz.timezone("Europe/Moscow")
+
         self.scheduler = AsyncIOScheduler(timezone=self.tz)
         try:
             self.scheduler.start()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to start scheduler: %s", e)
+
         self._last_used_model: str = ""
-        self._db_path = os.path.join(os.getcwd(), "ultimate_ai.db")
+
+        # Persist DB next to the module file when possible.
+        # When Hikka loads external modules via exec() (Heroku Heroku-style loader),
+        # __file__ may be undefined — fall back to CWD in that case.
+        try:
+            module_dir = os.path.dirname(os.path.abspath(__file__))
+        except NameError:
+            module_dir = os.getcwd()
+        self._db_path = os.path.join(module_dir, "ultimate_ai.db")
         self._db_conn = sqlite3.connect(self._db_path, check_same_thread=False)
+        # WAL mode reduces lock contention between reminders, memory writes, history
+        try:
+            self._db_conn.execute("PRAGMA journal_mode=WAL;")
+            self._db_conn.execute("PRAGMA synchronous=NORMAL;")
+        except Exception as e:
+            logger.warning("Failed to set SQLite PRAGMA: %s", e)
         self._db_conn.execute(
             "CREATE TABLE IF NOT EXISTS memory (chat_id TEXT, role TEXT, content TEXT, timestamp INTEGER)"
         )
@@ -788,16 +841,16 @@ class UltimateAIAgentMod(loader.Module):
             if "action_command" not in columns:
                 cur.execute("ALTER TABLE reminders ADD COLUMN action_command TEXT DEFAULT ''")
                 self._db_conn.commit()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Failed to ensure reminders schema: %s", e)
 
     async def client_ready(self):
         self._load_state()
         try:
             if not getattr(self.scheduler, "running", False):
                 self.scheduler.start()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Scheduler restart in client_ready failed: %s", e)
         await self._restore_scheduled_reminders()
 
     async def on_unload(self):
@@ -872,7 +925,7 @@ class UltimateAIAgentMod(loader.Module):
         return self._history_key(message)
 
     def _gh_header(self, title: str) -> str:
-        return f"<b>𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺 • GitHub • {self._escape(title)}</b>"
+        return f"<b>VoidPixel Studio • GitHub • {self._escape(title)}</b>"
 
     def _ensure_github_workspace(self) -> str:
         workspace = str(self.config.get("github_workspace", "")).strip() or os.path.join(os.getcwd(), "voidpixel_github_workspace")
@@ -1180,7 +1233,7 @@ class UltimateAIAgentMod(loader.Module):
         if self._plain_text_len(raw) <= 500:
             return raw
         return (
-            '<blockquote expandable><b>𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺</b>\n'
+            '<blockquote expandable><b>VoidPixel Studio</b>\n'
             + raw
             + '</blockquote>'
         )
@@ -4763,15 +4816,132 @@ class UltimateAIAgentMod(loader.Module):
             body += "\n<pre>" + self._escape(self._truncate(output.strip(), 12000)) + "</pre>"
         await self._replace_status_with_new_message(status, body, reply_to=self._get_reply_to_id(message))
 
-    @loader.command(ru_doc="Выполнить bash-команду через ИИ")
+    # =========================================================================
+    # Shell subsystem
+    #
+    # SECURITY MODEL:
+    #   1. `shell_enabled` must be True (default: True, user can disable via .cfg)
+    #   2. Reply-context is NOT passed into the LLM planner. Only explicit args.
+    #      This prevents prompt injection via replying to attacker messages.
+    #   3. By default (`shell_require_sandbox=True`) the planned command runs
+    #      inside a disposable docker container with `--network none`, memory
+    #      limit, and an isolated temp workspace. Host filesystem is NOT mounted.
+    #   4. If sandbox is required but docker is unavailable -> refuse.
+    #   5. If user explicitly opts out (`shell_require_sandbox=False`), a
+    #      blacklist-based filter runs on the host. This mode is documented as
+    #      dangerous and should only be enabled on throwaway machines.
+    # =========================================================================
+
+    # Dangerous primitives to reject in host-mode. This is intentionally NOT
+    # a substitute for sandboxing — it only catches low-effort mistakes.
+    _SHELL_HOST_BLACKLIST = (
+        "rm ", "rm\t", " rm ",
+        "rm -", "rmdir ", "shred",
+        "mkfs", "fdisk", "parted", "wipefs",
+        " dd ", "dd if=", "dd of=",
+        "shutdown", "reboot", "poweroff", "halt",
+        "/dev/sd", "/dev/nvme", "/dev/mmcblk",
+        ":(){ :|:& };:",
+        "chmod -r 000", "chmod 000", "chown -r",
+        "> /etc/", ">> /etc/",
+        "mv /", "cp /dev/",
+        "iptables -f", "ufw disable",
+        "systemctl stop", "systemctl disable",
+        "curl ", "wget ",                 # prevent arbitrary network fetch-and-run
+        "nc ", "netcat", "ncat",
+        "ssh ", "scp ", "rsync ",
+        "eval ", "exec ", "source ", ". /",
+        "/etc/shadow", "/etc/passwd", "~/.ssh", "/root/.ssh", "id_rsa",
+        ".env", "authorized_keys",
+        "$(", "`",                       # command substitution
+    )
+
+    def _shell_host_is_dangerous(self, cmd: str) -> Tuple[bool, str]:
+        """Return (blocked, reason). Used only in host-mode fallback."""
+        low = cmd.lower()
+        if "error: unsafe" in low:
+            return True, "planner refused"
+        for pat in self._SHELL_HOST_BLACKLIST:
+            if pat in low:
+                return True, f"blacklisted pattern: {pat.strip()!r}"
+        # Block pipelines to shell interpreter
+        if re.search(r"\|\s*(bash|sh|zsh|python|perl)\b", low):
+            return True, "pipe to interpreter"
+        return False, ""
+
+    async def _shell_run_sandboxed(self, cmd: str, timeout: int) -> Dict[str, Any]:
+        """Run command inside isolated docker container. Host FS is not mounted."""
+        memory_mb = int(self.config.get("sandbox_memory_mb", 512))
+        image = str(self.config.get("sandbox_image", "python:3.11-slim")).strip() or "python:3.11-slim"
+        temp_dir = await asyncio.to_thread(tempfile.mkdtemp, prefix="ultimate_ai_sh_")
+        try:
+            # --network none: no outbound network; --read-only: root FS read-only;
+            # only /workspace is writable (isolated tmpdir, NOT host root).
+            docker_cmd = [
+                "docker", "run", "--rm",
+                "--network", "none",
+                "--memory", f"{memory_mb}m",
+                "--memory-swap", f"{memory_mb}m",
+                "--read-only",
+                "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
+                "-v", f"{temp_dir}:/workspace",
+                "-w", "/workspace",
+                "--cap-drop", "ALL",
+                "--security-opt", "no-new-privileges",
+                image,
+                "bash", "-lc", cmd,
+            ]
+            result = await self._run_sandbox_subprocess(docker_cmd, cwd=temp_dir, timeout=timeout)
+            result["runtime"] = f"docker:{image}"
+            return result
+        finally:
+            await asyncio.to_thread(shutil.rmtree, temp_dir, True)
+
+    async def _shell_run_host(self, cmd: str, timeout: int) -> Dict[str, Any]:
+        """Run command on the host. Only used when sandbox is explicitly disabled."""
+        def _work() -> Dict[str, Any]:
+            try:
+                proc = subprocess.run(
+                    cmd, shell=True, capture_output=True, text=True, timeout=timeout,
+                )
+                return {
+                    "returncode": int(proc.returncode),
+                    "stdout": proc.stdout or "",
+                    "stderr": proc.stderr or "",
+                    "timed_out": False,
+                    "runtime": "host",
+                }
+            except subprocess.TimeoutExpired as e:
+                return {
+                    "returncode": 124,
+                    "stdout": (e.stdout if isinstance(e.stdout, str) else (e.stdout or b"").decode(errors="replace")) or "",
+                    "stderr": ((e.stderr if isinstance(e.stderr, str) else (e.stderr or b"").decode(errors="replace")) or "") + f"\nExecution timed out after {timeout}s.",
+                    "timed_out": True,
+                    "runtime": "host",
+                }
+        return await asyncio.to_thread(_work)
+
+    @loader.command(ru_doc="Выполнить bash-команду через ИИ (в sandbox)")
     async def sh(self, message: Message):
-        """.sh запрос — ИИ переведёт запрос в bash и выполнит его"""
+        """.sh запрос — ИИ переведёт запрос в bash и выполнит его в sandbox"""
         if not self._is_enabled():
             return await self._reply(message, self.strings["module_disabled"])
 
-        query = await self._get_query_or_reply(message)
+        if not bool(self.config.get("shell_enabled", True)):
+            return await self._reply(
+                message,
+                "<b>VoidPixel Studio • Shell</b>\n<code>команда .sh отключена (shell_enabled=False)</code>",
+            )
+
+        # Use explicit args only. Reply-context is intentionally NOT used here
+        # to prevent prompt injection via replying to untrusted messages.
+        query = utils.get_args_raw(message).strip()
         if not query:
-            return await self._reply(message, self.strings["no_query"])
+            return await self._reply(
+                message,
+                "<b>VoidPixel Studio • Shell</b>\n<code>Формат: .sh запрос</code>\n"
+                "<i>Reply-контекст намеренно не используется для .sh из соображений безопасности.</i>",
+            )
 
         not_ready = self._llm_not_ready_text()
         if not_ready:
@@ -4779,41 +4949,78 @@ class UltimateAIAgentMod(loader.Module):
 
         status = await self._reply(message, self.strings["shell_planning"])
         reply_to = self._get_reply_to_id(message)
+        timeout = int(self.config.get("shell_timeout", 15))
+        require_sandbox = bool(self.config.get("shell_require_sandbox", True))
 
         try:
-            translate_messages = [
+            planner_messages = [
                 {"role": "system", "content": (
                     "Ты эксперт по Linux bash. Переведи запрос пользователя в ОДНУ безопасную bash-команду. "
-                    "Запрещены деструктивные действия, удаление системных файлов, изменение критических конфигов. "
-                    "Верни только саму команду без пояснений. Если запрос опасен — ответь ERROR: unsafe."
+                    "Запрещены деструктивные действия, удаление системных файлов, изменение критических конфигов, "
+                    "загрузка и выполнение скриптов из сети (curl|bash), чтение приватных ключей, изменение sudoers. "
+                    "Верни только саму команду одной строкой без markdown, без бэктиков, без пояснений. "
+                    "Если запрос опасен или неоднозначен — ответь строго: ERROR: unsafe"
                 )},
                 {"role": "user", "content": query},
             ]
-            cmd_raw = await self._llm_chat(translate_messages, temperature=0.0)
+            cmd_raw = await self._llm_chat(planner_messages, temperature=0.0)
             cmd = cmd_raw.strip().strip('`').strip()
-            forbidden = ["rm ", "rm -", "> /dev/sda", "mkfs", "dd ", "shutdown", "reboot", ":(){ :|:& };:"]
-            if "ERROR: unsafe" in cmd or any(x in cmd.lower() for x in forbidden):
+            # Strip accidental ```bash wrappers
+            cmd = re.sub(r"^```(?:bash|sh)?\s*", "", cmd).rstrip("`").strip()
+            # Keep only first line to avoid multi-command injection
+            cmd = cmd.splitlines()[0].strip() if cmd else ""
+
+            if not cmd or "ERROR: unsafe" in cmd:
                 return await self._replace_status_with_new_message(
                     status,
-                    "<b>𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺 • Shell</b>\n<code>unsafe command rejected</code>",
+                    "<b>VoidPixel Studio • Shell</b>\n<code>unsafe command rejected by planner</code>",
                     reply_to=reply_to,
                 )
 
+            # Choose execution backend
+            docker_ready = self._sandbox_docker_available()
+            if require_sandbox and not docker_ready:
+                return await self._replace_status_with_new_message(
+                    status,
+                    "<b>VoidPixel Studio • Shell</b>\n"
+                    "<code>docker не найден, sandbox обязателен</code>\n"
+                    "<i>Установи docker или отключи sandbox через "
+                    "<code>.cfg UltimateAIAgent</code> → <code>shell_require_sandbox=False</code>. "
+                    "Отключение sandbox небезопасно — делай только на одноразовой машине.</i>",
+                    reply_to=reply_to,
+                )
+
+            # Host-mode: apply blacklist as second-line defense
+            if not require_sandbox:
+                blocked, reason = self._shell_host_is_dangerous(cmd)
+                if blocked:
+                    logger.warning("Host-mode .sh blocked: %s (cmd=%r)", reason, cmd)
+                    return await self._replace_status_with_new_message(
+                        status,
+                        f"<b>VoidPixel Studio • Shell</b>\n<code>host-mode rejected: {self._escape(reason)}</code>",
+                        reply_to=reply_to,
+                    )
+
+            mode_label = "sandbox (docker)" if docker_ready and require_sandbox else "host"
             try:
                 await status.edit(
-                    self.strings["shell_executing"] + "\n<code>" + self._escape(cmd) + "</code>",
+                    self.strings["shell_executing"]
+                    + f"\n<b>mode:</b> <code>{mode_label}</code>"
+                    + "\n<code>" + self._escape(cmd) + "</code>",
                     parse_mode="html",
                 )
             except Exception:
                 pass
 
-            def _run():
-                return subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=15)
+            if docker_ready and require_sandbox:
+                result = await self._shell_run_sandboxed(cmd, timeout)
+            else:
+                result = await self._shell_run_host(cmd, timeout)
 
-            proc = await asyncio.to_thread(_run)
-            stdout = (proc.stdout or "").strip()
-            stderr = (proc.stderr or "").strip()
-            exit_code = int(proc.returncode)
+            stdout = (result.get("stdout") or "").strip()
+            stderr = (result.get("stderr") or "").strip()
+            exit_code = int(result.get("returncode", 1))
+            runtime = result.get("runtime", "")
 
             try:
                 await status.edit(self.strings["shell_analyzing"], parse_mode="html")
@@ -4821,13 +5028,18 @@ class UltimateAIAgentMod(loader.Module):
                 pass
 
             analysis_messages = [
-                {"role": "system", "content": "Кратко объясни результат системной команды без ссылок из интернета. Не добавляй markdown. Не придумывай то, чего нет в выводе."},
+                {"role": "system", "content": (
+                    "Кратко объясни результат системной команды по данным пользователя. "
+                    "Не используй веб-поиск и ссылки. Не добавляй markdown. "
+                    "Не придумывай факты, которых нет в выводе."
+                )},
                 {"role": "user", "content": f"Command: {cmd}\nExit code: {exit_code}\nSTDOUT:\n{stdout[:6000]}\nSTDERR:\n{stderr[:6000]}"},
             ]
             analysis = await self._llm_chat(analysis_messages, temperature=0.1)
 
             body = (
-                "<b>𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺 • Shell</b>\n"
+                "<b>VoidPixel Studio • Shell</b>\n"
+                + f"<b>Mode:</b> <code>{self._escape(runtime or mode_label)}</code>\n"
                 + f"<b>Command:</b> <code>{self._escape(cmd)}</code>\n"
                 + f"<b>Exit code:</b> <code>{exit_code}</code>\n\n"
                 + self._escape(analysis)
@@ -4841,16 +5053,11 @@ class UltimateAIAgentMod(loader.Module):
                 body += "\n\n<b>Raw Output:</b>\n<pre>" + self._escape(self._truncate("\n\n".join(raw_parts), 12000)) + "</pre>"
 
             await self._replace_status_with_new_message(status, body, reply_to=reply_to)
-        except subprocess.TimeoutExpired:
-            await self._replace_status_with_new_message(
-                status,
-                "<b>𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺 • Shell</b>\n<code>execution timeout</code>",
-                reply_to=reply_to,
-            )
         except Exception as e:
+            logger.exception(".sh handler failed")
             await self._replace_status_with_new_message(
                 status,
-                "<b>𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺 • Shell</b>\n<pre>" + self._escape(str(e)) + "</pre>",
+                "<b>VoidPixel Studio • Shell</b>\n<pre>" + self._escape(type(e).__name__ + ": " + str(e)) + "</pre>",
                 reply_to=reply_to,
             )
 
@@ -4884,7 +5091,7 @@ class UltimateAIAgentMod(loader.Module):
             ]
             analysis = await self._llm_chat(analysis_messages, temperature=0.1)
             body = (
-                "<b>𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺 • System</b>\n"
+                "<b>VoidPixel Studio • System</b>\n"
                 + self._escape(analysis)
                 + "\n\n<b>RAM:</b>\n<pre>" + self._escape(self._truncate(mem, 4000)) + "</pre>"
                 + "\n<b>CPU:</b>\n<pre>" + self._escape(self._truncate(cpu, 2000)) + "</pre>"
@@ -4894,7 +5101,7 @@ class UltimateAIAgentMod(loader.Module):
         except Exception as e:
             await self._replace_status_with_new_message(
                 status,
-                "<b>𝖁𝕺𝕴𝕯𝕻𝕴𝖃𝕰𝕷_𝕾𝕿𝖀𝕯𝕴𝕺 • System</b>\n<pre>" + self._escape(str(e)) + "</pre>",
+                "<b>VoidPixel Studio • System</b>\n<pre>" + self._escape(str(e)) + "</pre>",
                 reply_to=reply_to,
             )
 
